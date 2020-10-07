@@ -74,4 +74,20 @@ instacart %>%
   knitr:: kable()
 ```
 
+*Table with mean hour of day at which Pink Lady Apples/Coffee ice cream are ordered* 
+
+```{r}
+instacart %>% 
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  ) %>% 
+  knitr :: kable()
+```
+
+## Problem 2 
+
 
