@@ -127,9 +127,9 @@ This dataset provides information on the activity counts for one man over every 
 
 ```{r Making a table with aggregate activity}
 accel_agg = 
-accel_wkdy %>% 
+accel_wkdy %>%
   group_by(day_id,day,week) %>% 
-  knitr::kable() 
+  knitr:: kable()
 ```
 
 *Trends*: 
@@ -152,11 +152,56 @@ accel_wkdy %>%
 ```
 
 
-
 ## Problem 3 
 
-```{r loading in the dataset}
+The NY NOAA dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns. The dataset covers the minimum and maximum temperature (in tenths of degrees C), precipitation (in tenths of mm), snowfall (mm) and snow depth (mm) in New York state for every day from January 1, 1981 to December 31, 2010. While this dataset is huge, missing data is a pretty significant issue. The maximum/minimum temperature variables are missing 1,134,358 and 1,134,4420 values, respectively. There are also large quantities of missing values for precipitation (145,838), snowfall (381,221), and snow depth (591,786). 
 
+```{r loading in the dataset, tidying, finding the mode}
+data("ny_noaa")
+
+clean_nynoaa = 
+ny_noaa %>% 
+  separate(date,into = c("year","month","day"),convert = "TRUE") %>% 
+  mutate(
+    tmax = as.double(tmax),
+    tmin = as.double(tmin)
+  ) %>% 
+  mutate(tmax = (tmax/10)) %>% 
+  mutate(tmin = (tmin/10))  %>% 
+  mutate(prcp = (prcp/10)) 
+
+skimr::skim(clean_nynoaa)
+
+clean_nynoaa %>%
+  count(snow) %>% 
+  arrange(snow)
+
+clean_nynoaa
 
 ```
+
+The most commonly observed value in the snowfall variable is 0, which makes sense since it typically only snows during 1/4 of the year in New York State. It is worth noting that there is one value of -13 for snowfall; this may be an error in the data that should be addressed/better understood before carrying out any analysis. 
+
+```{r two-panel plot of average max temp in Jan/July}
+clean_nynoaa %>% 
+  mutate(month = as.character(month)) %>% 
+  filter(month == c(1,7)) %>% 
+  group_by(id,year,month) %>% 
+  summarize(
+  mean_tmax = mean(tmax)) %>% 
+  ggplot(aes(x = year, y = mean_tmax)) + 
+    geom_point(alpha = .2) + 
+    geom_smooth(se = FALSE) + 
+    facet_grid(. ~ month) + 
+    labs(
+    title = "Average Max Temperature in January and July, 1981-2010",
+    x = "Year",
+    y = "Mean Maximum Temperature",
+    caption = "data from NY NOAA"
+    )
+
+```
+
+
+
 
