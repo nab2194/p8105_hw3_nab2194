@@ -119,29 +119,36 @@ mutate(accel_longer,
   mutate(minute_of_day = as.double(minute_of_day)) %>% 
   mutate(day = as.factor(day)) %>%
   mutate(
-  day = forcats::fct_relevel(day, "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"))
+  day = forcats::fct_relevel(day, "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")) 
 
 ```
 
 This dataset provides information on the activity counts for one man over every minute of a 5-week period. After tidying the data, the resulting dataframe has `r nrow(accel_wkdy)` rows and `r ncol(accel_wkdy)` columns. The dataframe includes the week number, an ID for the day number, a binary variable referring to whether the day is a weekday or a weekend (defined as Saturday/Sunday), the minute of the day, and the activity count.
 
 ```{r Making a table with aggregate activity}
-
 accel_agg = 
-accel_longer %>% 
-  group_by(day_id, day,week) %>% 
-  summarize(activity_day = sum(activity_count)) %>% 
-  knitr::kable()
-  accel_agg 
-  
+accel_wkdy %>% 
+  group_by(day_id,day,week) %>% 
+  knitr::kable() 
 ```
 
-*Trends*
+*Trends*: 
+
 On first glance, it looks like Fridays tend to be high activity days on average, while Saturdays are lower in activity. It's hard to tell without plotting (part of why plots are important!) but it seems as though Week 3 was a particularly high activity week. 
 
 Creating a plot 
-```{r}
-
+```{r Single-panel plot for activity over every minute}
+accel_wkdy %>% 
+  ggplot(aes(x = minute_of_day, y = activity_count)) +
+  geom_line(aes(), alpha = .2) + 
+  geom_smooth(aes(color = day), se = FALSE, alpha = .2) +
+  labs(
+    title = "Activity Count by Minute for a 5-Week Period",
+    x = "Minute of the Day",
+    y = "Activity Count",
+    caption = "data from accelerometer dataset"
+    )
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
 
