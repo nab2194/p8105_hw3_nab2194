@@ -8,6 +8,9 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(p8105.datasets)
+install.packages("hexbin",repos = "http://cran.us.r-project.org")
+install.packages("patchwork",repos = "http://cran.us.r-project.org")
+install.packages("ggridges",repos = "http://cran.us.r-project.org")
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -103,6 +106,7 @@ accel_longer =
   values_to = "activity_count"
   ) 
 
+
 accel_wkdy = 
 mutate(accel_longer,
        weekday_end = case_when(
@@ -120,7 +124,7 @@ mutate(accel_longer,
   mutate(day = as.factor(day)) %>%
   mutate(
   day = forcats::fct_relevel(day, "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")) 
-
+  
 ```
 
 This dataset provides information on the activity counts for one man over every minute of a 5-week period. After tidying the data, the resulting dataframe has `r nrow(accel_wkdy)` rows and `r ncol(accel_wkdy)` columns. The dataframe includes the week number, an ID for the day number, a binary variable referring to whether the day is a weekday or a weekend (defined as Saturday/Sunday), the minute of the day, and the activity count.
@@ -128,8 +132,9 @@ This dataset provides information on the activity counts for one man over every 
 ```{r Making a table with aggregate activity}
 accel_agg = 
 accel_wkdy %>%
+   mutate(day = forcats::fct_relevel(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")) %>% 
   group_by(day_id,day,week) %>% 
-  knitr:: kable()
+  knitr:: kable() %>% view
 ```
 
 *Trends*: 
@@ -147,8 +152,9 @@ accel_wkdy %>%
     x = "Minute of the Day",
     y = "Activity Count",
     caption = "data from accelerometer dataset"
-    )
+    ) + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
 ```
 
 
@@ -167,7 +173,7 @@ ny_noaa %>%
     tmin = as.double(tmin)
   ) %>% 
   mutate(tmax = (tmax/10)) %>% 
-  mutate(tmin = (tmin/10))  %>% 
+  mutate(tmin = (tmin/10)) %>% 
   mutate(prcp = (prcp/10)) 
 
 skimr::skim(clean_nynoaa)
@@ -190,8 +196,8 @@ clean_nynoaa %>%
   summarize(
   mean_tmax = mean(tmax)) %>% 
   ggplot(aes(x = year, y = mean_tmax)) + 
-    geom_point(alpha = .2) + 
-    geom_smooth(se = FALSE) + 
+    geom_point(alpha = .3) +
+    geom_smooth(se = FALSE) +
     facet_grid(. ~ month) + 
     labs(
     title = "Average Max Temperature in January and July, 1981-2010",
@@ -199,9 +205,32 @@ clean_nynoaa %>%
     y = "Mean Maximum Temperature",
     caption = "data from NY NOAA"
     )
-
 ```
 
+*Trends*: 
+The average maximum temperature is obviously much warmer in July (hovering around 30 degrees Celsius) compared to January (ranging from around -5 degrees Celsius to a little under 5 degrees Celsius). There were higher average maximum temperatures in January in 1990, 2000, and around 2008, and this relationship appears to be relatively cyclical. There are a number of outliers in the July plot - in 1984, 1988, 2004, and around 2006, there were unseasonably cold July days (from just under 15 degrees Celsius to just over 20 degrees Celsius). 
+
+```{r Second plot with tmax vs. tmin for the full dataset }
+clean_nynoaa %>% 
+  ggplot(aes(x = tmax, y = tmin)) +
+  geom_hex() + 
+  theme(legend.position = "none") +
+  labs(
+    x = "Maximum Temperature",
+    y = "Minimum Temperature",
+    caption = "data from NY NOAA")
+
+clean_nynoaa %>% 
+  filter(snow > 0, snow < 100) %>% 
+  group_by(year) %>% 
+  ggplot(aes(x = snow, y = snow)) + 
+  geom_violin(alpha = .5) + 
+  facet_wrap(. ~ year) 
+  
+
+
+
+```
 
 
 
