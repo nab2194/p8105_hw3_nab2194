@@ -90,4 +90,36 @@ instacart %>%
 
 ## Problem 2 
 
+```{r bullet point 1 - data tidying}
+accel = 
+  read_csv("./data/accel_data.csv") %>% view()
+
+accel_longer = 
+  pivot_longer(
+  accel,
+  activity.1:activity.1440,
+  names_to = "minute_of_day",
+  names_prefix = "activity.",
+  values_to = "activity_count"
+  ) %>% view
+
+accel_wkdy = 
+mutate(accel_longer,
+       weekday = case_when(
+         day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday") ~ "weekday",
+         day %in% c("Saturday","Sunday") ~ "weekend"
+       ))
+
+accel_wkdy %>%  
+  mutate(day = as.factor(day)) %>% 
+  mutate(minute_of_day = as.double(minute_of_day)) %>% 
+  mutate(weekday = as.factor(weekday)) %>% 
+  relocate(weekday, .after = day) %>% view
+
+```
+
+
+This dataset provides information on the activity counts for one man over every minute of a 5-week period. After tidying the data, the resulting dataframe has `r nrow(accel_wkdy)` rows and `r ncol(accel_wkdy)` columns. The dataframe includes the week number, an ID for the day number, 
+
+
 
