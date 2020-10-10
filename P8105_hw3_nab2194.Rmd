@@ -127,10 +127,17 @@ This dataset provides information on the activity counts for one man over every 
 
 ```{r Making a table with aggregate activity}
 
-
+accel_agg = 
+accel_longer %>% 
+  group_by(day_id, day,week) %>% 
+  summarize(activity_day = sum(activity_count)) %>% 
+  knitr::kable()
+  accel_agg 
   
 ```
 
+*Trends*
+On first glance, it looks like Fridays tend to be high activity days on average, while Saturdays are lower in activity. It's hard to tell without plotting (part of why plots are important!) but it seems as though Week 3 was a particularly high activity week. 
 
 Creating a plot 
 ```{r}
