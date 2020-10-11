@@ -8,9 +8,8 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(p8105.datasets)
-install.packages("hexbin",repos = "http://cran.us.r-project.org")
-install.packages("patchwork",repos = "http://cran.us.r-project.org")
-install.packages("ggridges",repos = "http://cran.us.r-project.org")
+library(hexbin)
+library(patchwork)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -106,7 +105,6 @@ accel_longer =
   values_to = "activity_count"
   ) 
 
-
 accel_wkdy = 
 mutate(accel_longer,
        weekday_end = case_when(
@@ -132,8 +130,9 @@ This dataset provides information on the activity counts for one man over every 
 ```{r Making a table with aggregate activity}
 accel_agg = 
 accel_wkdy %>%
-   mutate(day = forcats::fct_relevel(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")) %>% 
-  group_by(day_id,day,week) 
+   group_by(day_id,day,week) %>% 
+   summarize(total_activity = sum(activity_count)) %>% 
+   mutate(day = forcats::fct_relevel(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
 
 knitr::kable(accel_agg)
 
@@ -147,18 +146,17 @@ Creating a plot
 ```{r Single-panel plot for activity over every minute}
 accel_wkdy %>% 
   ggplot(aes(x = minute_of_day, y = activity_count)) +
-  geom_point(aes(day_id), alpha = .2) + 
-  geom_smooth(aes(color = day), se = FALSE, alpha = .2) +
+  geom_line(aes(color = day), se = FALSE, alpha = .5) +
   labs(
     title = "Activity Count by Minute for a 5-Week Period",
     x = "Minute of the Day",
     y = "Activity Count",
     caption = "data from accelerometer dataset"
-    ) + 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+    ) 
 
 ```
 
+There is generally low activity from minutes 0-500, which makes sense, since the participant is probably sleeping. There is a significant spike at minute 1000 and around 1250, which corresponds to about 4:30PM and 6:30PM. This also makes sense, since this could be a high-activity time for socializing and doing activities, particularly on Friday and Saturday when we see spikes. 
 
 ## Problem 3 
 
@@ -217,6 +215,7 @@ tminmax = (clean_nynoaa %>%
     x = "Maximum Temperature",
     y = "Minimum Temperature",
     caption = "data from NY NOAA"))
+
 library(patchwork)
 snowdis = (clean_nynoaa %>% 
      filter(snow > 0, snow < 100) %>% 
@@ -229,7 +228,7 @@ tminmax + snowdis
 ```
 
 *Comments*: 
-This plot shows a comparison between maximum and minimum temperature on the left and the average distribution of snowfall for each year (1981-2010) on the left. The Hexplot shows that the minimum and maximum temperatures tend to overlap at around a minimum temperature of 15 degrees Celsius and a maximum temperature of around 20 degrees Celsius.
+This plot shows a comparison between maximum and minimum temperatures on the left and the average distribution of snowfall for each year (1981-2010) on the left. The Hexplot shows that the minimum and maximum temperatures tend to overlap at around a minimum temperature of 15 degrees Celsius and a maximum temperature of around 20 degrees Celsius.
 
 As you can see, there were outliers in the amount of snowfall in 1998, 2006, and 2010, with all of these years experiencing single days of 75mm or more snow. It seems as though most years had relatively similar snowfall, other than those three years. 
 
