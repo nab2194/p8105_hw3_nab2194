@@ -133,8 +133,10 @@ This dataset provides information on the activity counts for one man over every 
 accel_agg = 
 accel_wkdy %>%
    mutate(day = forcats::fct_relevel(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")) %>% 
-  group_by(day_id,day,week) %>% 
-  knitr:: kable() %>% view
+  group_by(day_id,day,week) 
+
+knitr::kable(accel_agg)
+
 ```
 
 *Trends*: 
@@ -145,7 +147,7 @@ Creating a plot
 ```{r Single-panel plot for activity over every minute}
 accel_wkdy %>% 
   ggplot(aes(x = minute_of_day, y = activity_count)) +
-  geom_line(aes(), alpha = .2) + 
+  geom_point(aes(day_id), alpha = .2) + 
   geom_smooth(aes(color = day), se = FALSE, alpha = .2) +
   labs(
     title = "Activity Count by Minute for a 5-Week Period",
@@ -176,13 +178,9 @@ ny_noaa %>%
   mutate(tmin = (tmin/10)) %>% 
   mutate(prcp = (prcp/10)) 
 
-skimr::skim(clean_nynoaa)
-
 clean_nynoaa %>%
   count(snow) %>% 
   arrange(snow)
-
-clean_nynoaa
 
 ```
 
@@ -210,24 +208,28 @@ clean_nynoaa %>%
 *Trends*: 
 The average maximum temperature is obviously much warmer in July (hovering around 30 degrees Celsius) compared to January (ranging from around -5 degrees Celsius to a little under 5 degrees Celsius). There were higher average maximum temperatures in January in 1990, 2000, and around 2008, and this relationship appears to be relatively cyclical. There are a number of outliers in the July plot - in 1984, 1988, 2004, and around 2006, there were unseasonably cold July days (from just under 15 degrees Celsius to just over 20 degrees Celsius). 
 
-```{r Second plot with tmax vs. tmin for the full dataset }
-clean_nynoaa %>% 
+```{r Second plot with tmax vs. tmin for the full dataset and patchwork for snow distribution }
+
+minmax =
+(clean_nynoaa %>% 
   ggplot(aes(x = tmax, y = tmin)) +
   geom_hex() + 
   theme(legend.position = "none") +
   labs(
     x = "Maximum Temperature",
     y = "Minimum Temperature",
-    caption = "data from NY NOAA")
+    caption = "data from NY NOAA"))
 
-clean_nynoaa %>% 
+snowfall_d = 
+(clean_nynoaa %>% 
   filter(snow > 0, snow < 100) %>% 
   group_by(year) %>% 
   ggplot(aes(x = snow, y = snow)) + 
-  geom_violin(alpha = .5) + 
-  facet_wrap(. ~ year) 
-  
+  geom_boxplot() + 
+  facet_wrap(. ~ year) + 
+  theme(legend.position = "bottom"))
 
+minmax + snowfall_d
 
 
 ```
