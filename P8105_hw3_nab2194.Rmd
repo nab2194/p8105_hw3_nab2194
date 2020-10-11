@@ -131,7 +131,7 @@ This dataset provides information on the activity counts for one man over every 
 accel_agg = 
 accel_wkdy %>%
    group_by(day_id,day,week) %>% 
-   summarize(total_activity = sum(activity_count)) %>% 
+  summarize(total_activity = sum(activity_count)) %>% 
    mutate(day = forcats::fct_relevel(day,"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
 
 knitr::kable(accel_agg)
