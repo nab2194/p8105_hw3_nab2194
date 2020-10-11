@@ -123,7 +123,7 @@ mutate(accel_longer,
   mutate(minute_of_day = as.double(minute_of_day)) %>% 
   mutate(day = as.factor(day)) %>%
   mutate(
-  day = forcats::fct_relevel(day, "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")) 
+  day = forcats::fct_relevel(day, "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"))
   
 ```
 
@@ -210,29 +210,27 @@ The average maximum temperature is obviously much warmer in July (hovering aroun
 
 ```{r Second plot with tmax vs. tmin for the full dataset and patchwork for snow distribution }
 
-minmax =
-(clean_nynoaa %>% 
+tminmax = (clean_nynoaa %>% 
   ggplot(aes(x = tmax, y = tmin)) +
-  geom_hex() + 
-  theme(legend.position = "none") +
+  geom_hex() +
   labs(
     x = "Maximum Temperature",
     y = "Minimum Temperature",
     caption = "data from NY NOAA"))
+library(patchwork)
+snowdis = (clean_nynoaa %>% 
+     filter(snow > 0, snow < 100) %>% 
+     group_by(year) %>% 
+     ggplot(aes(x = snow, y = snow)) + 
+     geom_boxplot() + 
+     facet_wrap(.~ year))  
 
-snowfall_d = 
-(clean_nynoaa %>% 
-  filter(snow > 0, snow < 100) %>% 
-  group_by(year) %>% 
-  ggplot(aes(x = snow, y = snow)) + 
-  geom_boxplot() + 
-  facet_wrap(. ~ year) + 
-  theme(legend.position = "bottom"))
-
-minmax + snowfall_d
-
-
+tminmax + snowdis
 ```
 
+*Comments*: 
+This plot shows a comparison between maximum and minimum temperature on the left and the average distribution of snowfall for each year (1981-2010) on the left. The Hexplot shows that the minimum and maximum temperatures tend to overlap at around a minimum temperature of 15 degrees Celsius and a maximum temperature of around 20 degrees Celsius.
+
+As you can see, there were outliers in the amount of snowfall in 1998, 2006, and 2010, with all of these years experiencing single days of 75mm or more snow. It seems as though most years had relatively similar snowfall, other than those three years. 
 
 
